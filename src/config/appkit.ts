@@ -86,11 +86,17 @@ export const modal = createAppKit({
     analytics: true,
     email: true,
     socials: ["google", "x", "github"],
+    // Keep wallets visible alongside email/social — this is the default
+    // landing view and ensures wallet deep-links fire on the FIRST tap
+    // (same gesture), not after a second interaction that breaks iOS/Android.
     emailShowWallets: true,
   },
-  themeMode: "dark",
+  // Always show the wallet list as the first screen so the deep-link
+  // to a mobile wallet app fires within the original user gesture.
+  defaultNetwork: mainnet,
+  themeMode: "light",
   themeVariables: {
-    "--w3m-accent": "#6366f1",
-    "--w3m-border-radius-master": "8px",
+    "--w3m-accent": "#0071e3",
+    "--w3m-border-radius-master": "10px",
   },
 });
