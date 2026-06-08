@@ -23,10 +23,11 @@ export default defineConfig({
     target: "es2022",
     rollupOptions: {
       output: {
-        manualChunks: {
-          "reown-vendor": ["@reown/appkit", "@reown/appkit-adapter-wagmi"],
-          "wagmi-vendor": ["wagmi", "viem"],
-          "query-vendor": ["@tanstack/react-query"],
+        manualChunks(id) {
+          if (id.includes("@reown/appkit")) return "reown-vendor";
+          if (id.includes("@reown/appkit-adapter-wagmi")) return "reown-vendor";
+          if (id.includes("node_modules/wagmi") || id.includes("node_modules/viem")) return "wagmi-vendor";
+          if (id.includes("@tanstack/react-query")) return "query-vendor";
         },
       },
     },
