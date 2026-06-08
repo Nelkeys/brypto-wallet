@@ -1,0 +1,293 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   src/styles/globals.css
+   Design tokens + base reset + component styles
+   Apple-inspired UI — clean, frosted glass, SF-system feel
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* ── Fonts ─────────────────────────────────────────────────────────────────── */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
+
+/* ── Design tokens ──────────────────────────────────────────────────────────── */
+:root {
+  /* Palette — Apple light system */
+  --color-bg:        #f5f5f7;   /* Apple's off-white page background */
+  --color-surface:   rgba(255, 255, 255, 0.72);   /* frosted card */
+  --color-surface-solid: #ffffff;
+  --color-border:    rgba(0, 0, 0, 0.08);
+  --color-accent:    #0071e3;   /* Apple blue */
+  --color-accent-hover: #0077ed;
+  --color-success:   #34c759;   /* Apple green */
+  --color-danger:    #ff3b30;   /* Apple red */
+  --color-text:      #1d1d1f;   /* Apple primary text */
+  --color-muted:     #6e6e73;   /* Apple secondary text */
+  --color-label:     #424245;   /* Apple tertiary label */
+
+  /* Typography — system stack matching SF Pro */
+  --font-display: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display",
+                  "Helvetica Neue", Arial, sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Radii — Apple uses larger, consistent rounding */
+  --radius-sm:   10px;
+  --radius-md:   14px;
+  --radius-lg:   20px;
+  --radius-xl:   28px;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
+
+  /* Shadows — Apple's characteristic subtle shadows */
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+  --shadow-lg:  0 12px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06);
+
+  /* Transitions */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── Reset ──────────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; font-size: 16px; }
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-display);
+  min-height: 100dvh;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Apple's subtle page texture — barely-there noise, no colored blobs */
+  background-image:
+    radial-gradient(ellipse 120% 60% at 50% -10%, rgba(255,255,255,0.90) 0%, transparent 70%);
+}
+
+/* Tap highlight removal — prevents grey flash on iOS */
+a, button { -webkit-tap-highlight-color: transparent; }
+
+/* ── Page layout ────────────────────────────────────────────────────────────── */
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: var(--space-lg) var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md) var(--space-lg);
+
+  /* Frosted glass nav bar — Apple signature */
+  background: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm),
+              inset 0 1px 0 rgba(255,255,255,0.9);
+}
+
+.page__logo {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
+
+.page__hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.page__title {
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  color: var(--color-text);
+}
+
+.page__subtitle {
+  font-size: 1.1rem;
+  color: var(--color-muted);
+  max-width: 480px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+/* ── Connect button ──────────────────────────────────────────────────────────── */
+.connect-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 10px 22px;
+  border-radius: 980px;           /* Apple pill button */
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+  transition: background 150ms var(--ease-out),
+              transform 100ms var(--ease-out),
+              box-shadow 150ms var(--ease-out);
+
+  /* Apple blue — solid, no gradient */
+  background: var(--color-accent);
+  color: #fff;
+
+  box-shadow: 0 1px 3px rgba(0,113,227,0.30);
+
+  /* iOS minimum tap target */
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.connect-btn:hover {
+  background: var(--color-accent-hover);
+  box-shadow: 0 2px 8px rgba(0,113,227,0.35);
+}
+.connect-btn:active {
+  transform: scale(0.97);
+  box-shadow: 0 1px 2px rgba(0,113,227,0.20);
+}
+.connect-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Connected variant — outlined pill */
+.connect-btn--connected {
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
+}
+.connect-btn--connected:hover {
+  background: #f0f0f2;
+  box-shadow: var(--shadow-md);
+}
+
+/* Spinner */
+.connect-btn__spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+
+/* Connection dot */
+.connect-btn__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-success);
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(52,199,89,0.25);
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Account card ────────────────────────────────────────────────────────────── */
+.account-card {
+  background: var(--color-surface);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+
+  border: 1px solid rgba(255,255,255,0.6);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md),
+              inset 0 1px 0 rgba(255,255,255,0.9);
+
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  max-width: 420px;
+}
+
+.account-card__network {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.account-card__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-success);
+  box-shadow: 0 0 0 2px rgba(52,199,89,0.25);
+}
+
+.account-card__address {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: var(--color-text);
+  word-break: break-all;
+}
+
+.account-card__balance {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
+
+.account-card__actions {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.account-card__btn {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  min-height: 44px;
+  transition: background 150ms var(--ease-out),
+              transform 100ms var(--ease-out);
+  letter-spacing: -0.01em;
+}
+
+.account-card__btn:active { transform: scale(0.97); }
+
+.account-card__btn--secondary {
+  background: rgba(0,0,0,0.04);
+  color: var(--color-accent);
+  border-color: transparent;
+}
+.account-card__btn--secondary:hover {
+  background: rgba(0,113,227,0.08);
+}
+
+.account-card__btn--danger {
+  background: transparent;
+  color: var(--color-danger);
+  border-color: rgba(255,59,48,0.20);
+}
+.account-card__btn--danger:hover {
+  background: rgba(255,59,48,0.06);
+}

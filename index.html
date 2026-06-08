@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!--
+      viewport: the `viewport-fit=cover` value ensures safe-area insets work
+      correctly on iPhone notch / Dynamic Island models.
+    -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0a0a0f" />
+
+    <!--
+      iOS-specific meta tags.
+      `apple-mobile-web-app-capable` enables full-screen mode when added to
+      the home screen; it also helps wallet deep-links work more reliably on
+      Safari because the WKWebView quirks are reduced.
+    -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <title>Web3 App</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

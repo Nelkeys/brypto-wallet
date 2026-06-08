@@ -1,0 +1,13 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# pnpm-workspace.yaml  (pnpm v11+)
+#
+# `allowBuilds` — explicitly permits native postinstall scripts.
+# Previously this lived in package.json under `pnpm.onlyBuiltDependencies`,
+# which pnpm 11 removed.  Add entries here if you add native modules.
+# ─────────────────────────────────────────────────────────────────────────────
+
+allowBuilds:
+  '@reown/appkit': true    # Reown pre-build step
+  bufferutil: true         # Native WS buffer optimisation (speeds up WalletConnect)
+  keccak: true             # Native keccak (falls back to pure-JS if build fails)
+  utf-8-validate: true     # Native WS frame validation
