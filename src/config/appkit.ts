@@ -46,11 +46,20 @@ export const supportedNetworks: [AppKitNetwork, ...AppKitNetwork[]] = [
  * Shown inside the wallet connection modal.
  * `url` MUST match your deployment domain for the Verify API to work correctly.
  */
+const appUrl = (import.meta.env.VITE_APP_URL as string | undefined) ?? window.location.origin;
+
 export const appMetadata = {
   name: (import.meta.env.VITE_APP_NAME as string | undefined) ?? "My Web3 App",
   description: (import.meta.env.VITE_APP_DESCRIPTION as string | undefined) ?? "A modular Web3 app",
-  url: (import.meta.env.VITE_APP_URL as string | undefined) ?? window.location.origin,
+  url: appUrl,
   icons: [(import.meta.env.VITE_APP_ICON as string | undefined) ?? `${window.location.origin}/icon.png`],
+  // `redirect` governs the trip BACK to this dApp after the wallet signs.
+  // Required (WalletConnect 1.9.5+) for reliable behaviour on iOS 17+, where
+  // automatic redirect-back is otherwise blocked. `universal` must match the
+  // verified domain registered in the Reown dashboard.
+  redirect: {
+    universal: appUrl,
+  },
 };
 
 // ─── React Query client ───────────────────────────────────────────────────────
@@ -69,8 +78,10 @@ export const queryClient = new QueryClient({
 export const wagmiAdapter = new WagmiAdapter({
   networks: supportedNetworks,
   projectId,
-  // `ssr: true` makes the adapter safe for SSR frameworks (Next, Remix, etc.)
-  ssr: true,
+  // This is a client-side Vite SPA (Netlify), NOT an SSR framework.
+  // `ssr: true` changes storage/cookie handling and can swallow wallet
+  // reconnection on mobile — keep it false for SPAs.
+  ssr: false,
 });
 
 // ─── AppKit initialisation ───────────────────────────────────────────────────
