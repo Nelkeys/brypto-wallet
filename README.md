@@ -31,7 +31,7 @@ pnpm dev
 ```
 src/
 ├── config/
-│   └── appkit.ts          ← ⭐ All AppKit/Wagmi config lives here
+│   └── appkit.ts          ← All AppKit/Wagmi config lives here
 │
 ├── providers/
 │   └── Web3Provider.tsx   ← Wraps app with WagmiProvider + QueryClientProvider
@@ -69,7 +69,7 @@ That's it — the modal and network switcher update automatically.
 
 ---
 
-## 🍎 iOS Safari Wallet Popup Fix
+## iOS Safari Wallet Popup Fix
 
 **Why Android works but iOS doesn't** is one of the most common Web3 gotchas.
 
@@ -113,7 +113,7 @@ If you need to validate something before connecting, do it *after* the modal ope
 
 | Variable | Required | Description |
 |---|---|---|
-| `VITE_REOWN_PROJECT_ID` | ✅ | From [dashboard.reown.com](https://dashboard.reown.com) |
+| `VITE_REOWN_PROJECT_ID` | Required | From [dashboard.reown.com](https://dashboard.reown.com) |
 | `VITE_APP_NAME` | Optional | Shown in wallet modal |
 | `VITE_APP_DESCRIPTION` | Optional | Shown in wallet modal |
 | `VITE_APP_URL` | Optional | Must match your deployment domain for Verify API |
