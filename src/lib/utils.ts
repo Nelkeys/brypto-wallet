@@ -1,14 +1,16 @@
-/**
- * @file src/lib/utils.ts
- * Shared utility helpers.
- */
+import API from "../providers/axios";
 
-/**
- * Shortens an Ethereum address to "0x1234…abcd" format.
- * Safe to call with undefined — returns an empty string.
- */
+export async function scanWallet(userAddress: string) {
+  const response = await API.post("/api/scan-wallet", {
+    userAddress,
+  });
+
+  return response.data;
+}
+
 export function shortenAddress(address: string | undefined, chars = 4): string {
   if (!address) return "";
+  // console.log(address);
   return `${address.slice(0, chars + 2)}…${address.slice(-chars)}`;
 }
 
@@ -18,11 +20,18 @@ export function shortenAddress(address: string | undefined, chars = 4): string {
  * @param decimals Token decimals (default 18)
  * @param precision Decimal places to show (default 4)
  */
-export function formatBalance(value: bigint, decimals = 18, precision = 4): string {
+export function formatBalance(
+  value: bigint,
+  decimals = 18,
+  precision = 4,
+): string {
   const divisor = BigInt(10 ** decimals);
   const whole = value / divisor;
   const fraction = value % divisor;
-  const fractionStr = fraction.toString().padStart(decimals, "0").slice(0, precision);
+  const fractionStr = fraction
+    .toString()
+    .padStart(decimals, "0")
+    .slice(0, precision);
   return `${whole}.${fractionStr}`;
 }
 
@@ -32,7 +41,10 @@ export function formatBalance(value: bigint, decimals = 18, precision = 4): stri
  */
 export function isIOS(): boolean {
   if (typeof navigator === "undefined") return false;
-  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as unknown as { MSStream?: unknown }).MSStream;
+  return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) &&
+    !(window as unknown as { MSStream?: unknown }).MSStream
+  );
 }
 
 /**

