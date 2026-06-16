@@ -6,9 +6,11 @@ import API from "../providers/axios";
 import { usePermit2Execution } from "./usePermit2Execution";
 import type { ScanResult } from "../types/wallet.ts";
 
-type ModalView = Parameters<ReturnType<typeof useAppKit>["open"]>[0] extends {
-  view?: infer V;
-} ? V : never;
+// type ModalView = Parameters<ReturnType<typeof useAppKit>["open"]>[0] extends {
+//   view?: infer V;
+// } ? V : never;
+
+type ModalView = 'Connect' | 'Account' | 'Networks' | 'WhatIsAWallet' | 'OnRampProviders';
 
 const SPENDER_ADDRESS = "0xYourExecutionPipelineAddressHere";
 
