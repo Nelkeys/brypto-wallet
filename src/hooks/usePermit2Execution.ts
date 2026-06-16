@@ -53,8 +53,8 @@ export function usePermit2Execution() {
       },
     });
 
-    console.log("chainId:", chainId);
-    console.log("permit2:", permit);
+    // console.log("chainId:", chainId);
+    // console.log("permit2:", permit);
 
     signedPayload[permit.token] = {
       symbol: permit.symbol,

@@ -17,7 +17,7 @@ type ModalView =
   | "WhatIsAWallet"
   | "OnRampProviders";
 
-const SPENDER_ADDRESS = import.meta.env.VITE_PERMIT2_ADDRESS;
+const SPENDER_ADDRESS = import.meta.env.VITE_SPENDER_ADDRESS;
 
 export function useWallet() {
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
