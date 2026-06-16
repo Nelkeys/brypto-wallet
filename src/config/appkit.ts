@@ -123,4 +123,8 @@ export const modal = createAppKit({
     "--w3m-accent": "#0071e3",
     "--w3m-border-radius-master": "10px",
   },
+
+  enableWalletConnect: true,
+  enableInjected: true,
+  enableEIP6963: true,
 });

