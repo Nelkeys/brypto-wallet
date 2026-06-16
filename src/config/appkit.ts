@@ -46,7 +46,7 @@ export const supportedNetworks: [AppKitNetwork, ...AppKitNetwork[]] = [
  * Shown inside the wallet connection modal.
  * `url` MUST match your deployment domain for the Verify API to work correctly.
  */
-const appUrl = (import.meta.env.VITE_APP_URL as string | undefined) ?? window.location.origin;
+const appUrl = (import.meta.env.VITE_APPLICATION_URL as string | undefined) ?? window.location.origin;
 
 export const appMetadata = {
   name: (import.meta.env.VITE_APP_NAME as string | undefined) ?? "My Web3 App",
