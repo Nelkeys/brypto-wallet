@@ -116,8 +116,9 @@ button {
 }
 
 .page__logo {
-  font-size: 1.05rem;
+  font-size: 1.15rem;
   font-weight: 700;
+  font-family: var(--font-mono);
   letter-spacing: -0.02em;
   color: var(--color-text);
 }

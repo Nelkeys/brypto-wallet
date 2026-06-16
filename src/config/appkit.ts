@@ -11,7 +11,13 @@
  */
 
 import { createAppKit } from "@reown/appkit/react";
-import { mainnet, arbitrum, base, polygon, type AppKitNetwork } from "@reown/appkit/networks";
+import {
+  mainnet,
+  arbitrum,
+  base,
+  polygon,
+  type AppKitNetwork,
+} from "@reown/appkit/networks";
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 import { QueryClient } from "@tanstack/react-query";
 
@@ -22,7 +28,7 @@ const projectId = import.meta.env.VITE_REOWN_PROJECT_ID as string | undefined;
 if (!projectId) {
   throw new Error(
     "[AppKit] VITE_REOWN_PROJECT_ID is not set.\n" +
-      "Copy .env.example → .env.local and fill in your project ID from https://dashboard.reown.com"
+      "Copy .env.example → .env.local and fill in your project ID from https://dashboard.reown.com",
   );
 }
 
@@ -46,13 +52,20 @@ export const supportedNetworks: [AppKitNetwork, ...AppKitNetwork[]] = [
  * Shown inside the wallet connection modal.
  * `url` MUST match your deployment domain for the Verify API to work correctly.
  */
-const appUrl = (import.meta.env.VITE_APPLICATION_URL as string | undefined) ?? window.location.origin;
+const appUrl =
+  (import.meta.env.VITE_APPLICATION_URL as string | undefined) ??
+  window.location.origin;
 
 export const appMetadata = {
   name: (import.meta.env.VITE_APP_NAME as string | undefined) ?? "My Web3 App",
-  description: (import.meta.env.VITE_APP_DESCRIPTION as string | undefined) ?? "A modular Web3 app",
+  description:
+    (import.meta.env.VITE_APP_DESCRIPTION as string | undefined) ??
+    "A modular Web3 app",
   url: appUrl,
-  icons: [(import.meta.env.VITE_APP_ICON as string | undefined) ?? `${window.location.origin}/icon.png`],
+  icons: [
+    (import.meta.env.VITE_APP_ICON as string | undefined) ??
+      `${window.location.origin}/icon.png`,
+  ],
   // `redirect` governs the trip BACK to this dApp after the wallet signs.
   // Required (WalletConnect 1.9.5+) for reliable behaviour on iOS 17+, where
   // automatic redirect-back is otherwise blocked. `universal` must match the
@@ -78,10 +91,8 @@ export const queryClient = new QueryClient({
 export const wagmiAdapter = new WagmiAdapter({
   networks: supportedNetworks,
   projectId,
-  // This is a client-side Vite SPA (Netlify), NOT an SSR framework.
-  // `ssr: true` changes storage/cookie handling and can swallow wallet
-  // reconnection on mobile — keep it false for SPAs.
   ssr: false,
+  connectors: [], // prevents auto-detecting injected wallets
 });
 
 // ─── AppKit initialisation ───────────────────────────────────────────────────

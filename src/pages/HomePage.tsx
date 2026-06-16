@@ -12,7 +12,7 @@ export function HomePage() {
   return (
     <main className="page">
       <header className="page__header">
-        <div className="page__logo">Web3 App</div>
+        <div className="page__logo">Neuro Mint</div>
         <ConnectButton />
       </header>
 
@@ -23,7 +23,7 @@ export function HomePage() {
         <p className="page__subtitle">
           {isConnected
             ? "Interact with any dApp feature below."
-            : "Works on iOS, Android, and desktop — tap to get started."}
+            : "Works on iOS, Android, and desktop. Tap to get started."}
         </p>
       </section>
 
