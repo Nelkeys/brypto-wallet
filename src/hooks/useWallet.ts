@@ -41,7 +41,7 @@ export function useWallet() {
           return;
         }
 
-        console.log(result);
+        // console.log(result);
 
         setScanResult(result.data[0]);
       } catch (error) {

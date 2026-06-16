@@ -15,11 +15,11 @@ function avatarColor(address: string): string {
 // Return the CSS modifier for the chain dot
 function chainDotClass(chainId: number): string {
   const map: Record<number, string> = {
-    1:     "ethereum",
-    137:   "polygon",
-    10:    "optimism",
+    1: "ethereum",
+    137: "polygon",
+    10: "optimism",
     42161: "arbitrum",
-    56:    "bsc",
+    56: "bsc",
   };
   return map[chainId] ? `account-card__dot--${map[chainId]}` : "";
 }
@@ -43,9 +43,10 @@ export function AccountCard() {
   // Avatar shows first 4 hex chars of the address
   const avatarLabel = address.slice(2, 6).toUpperCase();
 
+  // console.log(Number(balance?.formatted ?? 0));
+
   return (
     <div className="account-card" role="region" aria-label="Wallet info">
-
       {/* Network badge */}
       <div className="account-card__network-row">
         <div className="account-card__network">
@@ -79,7 +80,9 @@ export function AccountCard() {
           >
             {copied ? (
               <>
-                <span className="copy-btn__check" aria-hidden="true">✓</span>
+                <span className="copy-btn__check" aria-hidden="true">
+                  ✓
+                </span>
                 Copied
               </>
             ) : (
@@ -98,7 +101,9 @@ export function AccountCard() {
           <p className="account-card__balance-label">Balance</p>
           <p className="account-card__balance">
             {Number(balance.formatted).toFixed(4)}
-            <span className="account-card__balance-symbol">{balance.symbol}</span>
+            <span className="account-card__balance-symbol">
+              {balance.symbol}
+            </span>
           </p>
         </div>
       )}
