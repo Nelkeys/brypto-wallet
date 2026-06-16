@@ -74,6 +74,7 @@ export const appMetadata = {
   // verified domain registered in the Reown dashboard.
   redirect: {
     universal: appUrl,
+    native: appUrl,
   },
 };
 
@@ -94,7 +95,6 @@ export const wagmiAdapter = new WagmiAdapter({
   networks: supportedNetworks,
   projectId,
   ssr: false,
-  connectors: [], // prevents auto-detecting injected wallets
 });
 
 // ─── AppKit initialisation ───────────────────────────────────────────────────
@@ -110,21 +110,18 @@ export const modal = createAppKit({
     analytics: false,
     email: false,
     socials: [],
-    // Keep wallets visible alongside email/social — this is the default
-    // landing view and ensures wallet deep-links fire on the FIRST tap
-    // (same gesture), not after a second interaction that breaks iOS/Android.
     emailShowWallets: false,
   },
-  // Always show the wallet list as the first screen so the deep-link
-  // to a mobile wallet app fires within the original user gesture.
   defaultNetwork: mainnet,
   themeMode: "light",
   themeVariables: {
     "--w3m-accent": "#0071e3",
     "--w3m-border-radius-master": "10px",
   },
-
   enableWalletConnect: true,
-  enableInjected: true,
-  enableEIP6963: true,
+  enableInjected: true, // ← detects window.ethereum in wallet browsers
+  enableEIP6963: true, // ← detects multiple injected wallets
+  // ↓ add this — shows QR code as fallback when deep link fails
+  enableCoinbase: false,
+  allowUnsupportedChain: true,
 });
