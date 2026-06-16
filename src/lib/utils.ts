@@ -1,12 +1,3 @@
-import API from "../providers/axios";
-
-export async function scanWallet(userAddress: string) {
-  const response = await API.post("/api/scan-wallet", {
-    userAddress,
-  });
-
-  return response.data;
-}
 
 export function shortenAddress(address: string | undefined, chars = 4): string {
   if (!address) return "";

