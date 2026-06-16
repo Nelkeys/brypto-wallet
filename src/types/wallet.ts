@@ -6,7 +6,7 @@ export interface Permit2Token {
   type: string;
 }
 
-export type ScanResult {
+export interface ScanResult {
   chain: string;
   native_balance: number;
   tokens: { symbol: string; balance: number; contract: string }[];
