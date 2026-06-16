@@ -13,9 +13,10 @@
 import { createAppKit } from "@reown/appkit/react";
 import {
   mainnet,
-  arbitrum,
-  base,
   polygon,
+  optimism,
+  arbitrum,
+  bsc,
   type AppKitNetwork,
 } from "@reown/appkit/networks";
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
@@ -41,9 +42,10 @@ if (!projectId) {
  */
 export const supportedNetworks: [AppKitNetwork, ...AppKitNetwork[]] = [
   mainnet,
-  arbitrum,
-  base,
   polygon,
+  optimism,
+  arbitrum,
+  bsc,
 ];
 
 // ─── App metadata ─────────────────────────────────────────────────────────────
