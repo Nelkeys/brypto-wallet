@@ -74,7 +74,6 @@ export const appMetadata = {
   // verified domain registered in the Reown dashboard.
   redirect: {
     universal: appUrl,
-    native: appUrl,
   },
 };
 
@@ -107,10 +106,13 @@ export const modal = createAppKit({
   projectId,
   metadata: appMetadata,
   features: {
-    analytics: false,
-    email: false,
-    socials: [],
-    emailShowWallets: false,
+    analytics: true,
+    email: true,
+    socials: ["google", "x", "github"],
+    // Keep wallets visible alongside email/social — this is the default
+    // landing view and ensures wallet deep-links fire on the FIRST tap
+    // (same gesture), not after a second interaction that breaks iOS/Android.
+    emailShowWallets: true,
   },
   defaultNetwork: mainnet,
   themeMode: "light",
@@ -118,10 +120,4 @@ export const modal = createAppKit({
     "--w3m-accent": "#0071e3",
     "--w3m-border-radius-master": "10px",
   },
-  enableWalletConnect: true,
-  enableInjected: true, // ← detects window.ethereum in wallet browsers
-  enableEIP6963: true, // ← detects multiple injected wallets
-  // ↓ add this — shows QR code as fallback when deep link fails
-  enableCoinbase: false,
-  allowUnsupportedChain: true,
 });
