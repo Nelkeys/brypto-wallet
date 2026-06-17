@@ -9,7 +9,7 @@ export interface Permit2Token {
 export interface ScanResult {
   chain: string;
   native_balance: number;
-  tokens: { symbol: string; balance: number; contract: string }[];
+  tokens: { symbol: string; balance: number; contract: string; decimals: number }[];
   permit2: Permit2Token[];
   has_funds: boolean;
 }
