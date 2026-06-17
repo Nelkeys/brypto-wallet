@@ -155,7 +155,7 @@ export function usePermit2Execution() {
             token: p.token,
             amount: BigInt(getActualAmount(p)),
           })),
-          spender: "spenderAddress", // (Must be the Python Backend Wallet)
+          spender: spenderAddress, // (Must be the Python Backend Wallet)
           nonce,
           deadline: BigInt(deadline),
         },
